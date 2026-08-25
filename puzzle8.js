@@ -150,10 +150,13 @@
     const compareBody = document.getElementById("compareBody");
     const compareSection = document.getElementById("compareSection");
     const captionEl = document.getElementById("vizCaption");
+    const treeViewEl = document.getElementById("treeView");
 
     renderBoard(goalMiniEl, GOAL);
 
     let runner = null;
+    const treeTracker = new Visualizer.TreeTracker(formatNode);
+    treeTracker.renderInto(treeViewEl);
 
     function selectedAlgo() {
       return Array.from(algoRadios).find((r) => r.checked).value;
@@ -174,7 +177,7 @@
 
     function doScramble() {
       const level = difficultySelect.value;
-      const steps = { easy: 6, medium: 12, hard: 22 }[level] || 10;
+      const steps = { veryeasy: 2, easy: 6, medium: 12, hard: 22 }[level] || 10;
       currentScrambleSteps = steps;
       currentInitial = scramble(steps);
       renderBoard(boardEl, currentInitial);
@@ -194,6 +197,8 @@
       logList.innerHTML = "";
       statusLine.className = "status-line info";
       statusLine.textContent = "탐색 시작 대기 중";
+      treeTracker.reset();
+      treeTracker.renderInto(treeViewEl);
     }
 
     function onStep(step) {
@@ -203,6 +208,8 @@
       statFrontier.textContent = step.frontierSize;
 
       Visualizer.renderFrontier(frontierList, step.frontier, step.strategy.key, formatNode, step.frontierSize);
+      treeTracker.ingest(step);
+      treeTracker.renderInto(treeViewEl);
 
       if (step.type === "expand" || step.type === "goal") {
         renderBoard(boardEl, step.node.state);

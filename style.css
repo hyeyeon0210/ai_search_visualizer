@@ -741,3 +741,139 @@ kbd {
   font-size: 0.8em;
   font-family: ui-monospace, monospace;
 }
+
+/* ---------- 탐색 트리 시각화 ---------- */
+
+.tree-view-wrap {
+  overflow: auto;
+  max-height: 480px;
+  border: 1px solid var(--gridline);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 14px 6px;
+  background: var(--surface-1);
+}
+
+.tree-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 10px 4px;
+}
+
+ul.tree-list,
+ul.tree-list ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 20px;
+}
+
+ul.tree-list {
+  padding-left: 4px;
+}
+
+ul.tree-list li {
+  position: relative;
+  padding: 3px 0 3px 20px;
+}
+
+ul.tree-list > li {
+  padding-left: 0;
+}
+
+ul.tree-list ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 18px;
+  width: 14px;
+  border-left: 1.5px solid var(--baseline);
+  border-bottom: 1.5px solid var(--baseline);
+  border-radius: 0 0 0 4px;
+}
+
+ul.tree-list ul li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 18px;
+  bottom: 0;
+  border-left: 1.5px solid var(--baseline);
+}
+
+ul.tree-list ul li:last-child::after {
+  display: none;
+}
+
+.tree-node-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1.5px dashed var(--gridline);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tree-node-label.state-expanded {
+  border-style: solid;
+  border-color: var(--gridline);
+  background: var(--gridline);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.tree-node-label.state-goal {
+  border-style: solid;
+  border-color: var(--status-good);
+  background: color-mix(in srgb, var(--status-good) 18%, transparent);
+  color: var(--status-good);
+  font-weight: 800;
+}
+
+.tree-node-label.tree-node-latest {
+  outline: 2.5px solid var(--text-primary);
+  outline-offset: 1px;
+}
+
+.tree-node-meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.tree-truncated-note {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tree-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 10px 0 14px;
+}
+
+.tree-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tree-legend .swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.tree-legend .swatch.frontier { border: 1.5px dashed var(--gridline); }
+.tree-legend .swatch.expanded { background: var(--gridline); }
+.tree-legend .swatch.goal { background: var(--status-good); }
+.tree-legend .swatch.latest { border: 2.5px solid var(--text-primary); }

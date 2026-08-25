@@ -157,11 +157,129 @@
     el.innerHTML = "";
   }
 
+  // ---------- 탐색 트리 시각화 ----------
+
+  /**
+   * 지금까지 생성/확장된 노드들을 부모-자식 관계로 누적해서
+   * 들여쓰기 트리(디렉터리 구조 같은 모양)로 그려주는 클래스.
+   * "아주 쉬움" 난이도처럼 노드 수가 적을 때 특히 유용합니다.
+   */
+  class TreeTracker {
+    /**
+     * @param {function} formatNode
+     * @param {object} opts - { cap } 추적/렌더링할 최대 노드 수.
+     *   상태 공간이 큰 문제(예: 어려움 난이도, 빈 틱택토 보드)에서 매 스텝마다
+     *   전체 트리를 다시 그리면 노드 수의 제곱에 비례해 느려지므로,
+     *   추적 자체를 이 개수에서 멈춰(하드 캡) 성능을 보장합니다.
+     */
+    constructor(formatNode, opts = {}) {
+      this.formatNode = formatNode;
+      this.cap = opts.cap || 200;
+      this.reset();
+    }
+
+    reset() {
+      this.nodes = new Map(); // id -> { id, parentId, node, status, order }
+      this.order = [];
+      this.lastId = null;
+      this.capped = false;
+    }
+
+    ingest(step) {
+      if (!step || this.capped) return;
+      const statusPriority = { frontier: 0, expanded: 1, goal: 2 };
+      const consider = (n, status) => {
+        if (!n || this.capped) return;
+        let entry = this.nodes.get(n.id);
+        if (!entry) {
+          if (this.nodes.size >= this.cap) {
+            this.capped = true;
+            return;
+          }
+          entry = { id: n.id, parentId: n.parent ? n.parent.id : null, node: n, status, order: this.order.length };
+          this.nodes.set(n.id, entry);
+          this.order.push(n.id);
+        } else if (statusPriority[status] > statusPriority[entry.status]) {
+          entry.status = status;
+        }
+      };
+      (step.frontier || []).forEach((n) => consider(n, "frontier"));
+      if (step.node) {
+        consider(step.node, step.type === "goal" ? "goal" : "expanded");
+        if (!this.capped && this.nodes.has(step.node.id)) this.lastId = step.node.id;
+      }
+    }
+
+    renderInto(container) {
+      container.innerHTML = "";
+      if (this.nodes.size === 0) {
+        const empty = document.createElement("div");
+        empty.className = "tree-empty";
+        empty.textContent = "아직 생성된 노드가 없습니다. 탐색을 시작해보세요.";
+        container.appendChild(empty);
+        return;
+      }
+      // 등록된 노드 수는 this.cap 이하로 이미 제한되어 있으므로,
+      // 아래 그룹핑/렌더링 비용은 문제의 전체 상태 공간 크기와 무관하게 일정합니다.
+      const childrenOf = new Map();
+      this.nodes.forEach((entry) => {
+        if (entry.parentId != null && this.nodes.has(entry.parentId)) {
+          if (!childrenOf.has(entry.parentId)) childrenOf.set(entry.parentId, []);
+          childrenOf.get(entry.parentId).push(entry);
+        }
+      });
+      childrenOf.forEach((list) => list.sort((a, b) => a.order - b.order));
+
+      const buildLi = (entry) => {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        let cls = "tree-node-label state-" + entry.status;
+        if (entry.id === this.lastId) cls += " tree-node-latest";
+        span.className = cls;
+        const n = entry.node;
+        const labelText = document.createElement("span");
+        labelText.className = "tree-node-text";
+        labelText.textContent = this.formatNode(n);
+        const meta = document.createElement("span");
+        meta.className = "tree-node-meta";
+        const metaParts = [`g=${n.g}`];
+        if (n.h !== undefined && n.h !== null) metaParts.push(`h=${n.h}`);
+        meta.textContent = metaParts.join(" ");
+        span.appendChild(labelText);
+        span.appendChild(meta);
+        li.appendChild(span);
+
+        const kids = childrenOf.get(entry.id) || [];
+        if (kids.length) {
+          const ul = document.createElement("ul");
+          kids.forEach((k) => ul.appendChild(buildLi(k)));
+          li.appendChild(ul);
+        }
+        return li;
+      };
+
+      const rootId = this.order[0];
+      const rootEntry = this.nodes.get(rootId);
+      const topUl = document.createElement("ul");
+      topUl.className = "tree-list";
+      topUl.appendChild(buildLi(rootEntry));
+      container.appendChild(topUl);
+
+      if (this.capped) {
+        const note = document.createElement("div");
+        note.className = "tree-truncated-note";
+        note.textContent = `노드가 많아 ${this.cap}개까지만 추적하고 트리 표시를 멈췄습니다. "아주 쉬움"·"쉬움" 난이도에서는 트리 전체를 볼 수 있어요. (통계·프론티어·경로 결과에는 영향 없습니다)`;
+        container.appendChild(note);
+      }
+    }
+  }
+
   global.Visualizer = {
     SearchRunner,
     renderFrontier,
     appendLog,
     clearContainer,
     strategyBadgeClass,
+    TreeTracker,
   };
 })(window);

@@ -47,8 +47,8 @@
         <div id="tttEditBoard" class="ttt-board"></div>
         <div id="turnLabel" style="margin-top:10px; font-size:.85rem; color:var(--text-secondary);"></div>
         <div class="ttt-preset-row">
-          <button class="btn" data-preset="short">한 수만 남음</button>
-          <button class="btn" data-preset="medium">중간 경로</button>
+          <button class="btn" data-preset="short">🌱 아주 쉬움 (한 수만 남음)</button>
+          <button class="btn" data-preset="medium">쉬움 (몇 수 남음)</button>
           <button class="btn" data-preset="empty">빈 보드 (도전)</button>
           <button class="btn" id="clearBoardBtn">초기화</button>
         </div>
@@ -129,6 +129,17 @@
           </div>
         </div>
 
+        <div style="margin-top:18px;">
+          <div class="panel-title">탐색 트리 (부모→자식 구조로 보기)</div>
+          <div class="tree-legend">
+            <span><span class="swatch frontier"></span> 프론티어에 대기 중</span>
+            <span><span class="swatch expanded"></span> 이미 확장됨</span>
+            <span><span class="swatch latest"></span> 방금 확장된 노드</span>
+            <span><span class="swatch goal"></span> 목표 상태</span>
+          </div>
+          <div id="treeViewTtt" class="tree-view-wrap"></div>
+        </div>
+
         <div id="pathSectionTtt" style="display:none; margin-top:18px;">
           <div class="panel-title">찾은 승리 경로</div>
           <div id="pathStripTtt" class="path-strip"></div>
@@ -147,7 +158,13 @@
     </div>
   </div>
 
-  <div class="note-box" style="margin-top:24px;">
+  <div class="note-box blue" style="margin-top:24px;">
+    <strong>처음이라면 "🌱 아주 쉬움" 프리셋으로 시작해보세요.</strong> 노드가 몇 개 안
+    생겨서 아래 "탐색 트리"에서 BFS·DFS가 어떤 순서로 노드를 확장하는지 트리 전체를
+    한눈에 볼 수 있습니다.
+  </div>
+
+  <div class="note-box" style="margin-top:16px;">
     <strong>관찰 포인트</strong> — "빈 보드 (도전)" 프리셋으로 BFS를 돌려보면 노드 수가
     매우 빠르게 늘어나는 것을 볼 수 있습니다. 이는 맹목적 탐색이 상태 공간이 큰 문제에서
     비효율적일 수 있음을 보여주는 좋은 예시입니다. 반면 최상 우선 탐색이나 A*는 휴리스틱
